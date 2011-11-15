@@ -21,6 +21,7 @@ var github = module.exports = (function() {
             if (error)
                 return err(error);
             
+            // load the page in JsDom so we can use jQuery
             jsdom.env(body, [
               'http://code.jquery.com/jquery-1.5.min.js'
             ],
@@ -29,11 +30,13 @@ var github = module.exports = (function() {
                 
                 var $ = window.$;
                 
+                // fill out the form and serialize
                 var form = $("div.login_form form:first");
                 form.find("[name=login]").val("c9integrationtest");
                 form.find("[name=password]").val("jan1234");
                 var data = form.serialize();
                 
+                // post the data
                 request({ 
                     uri: "https://github.com" + form.attr("action"), 
                     method: form.attr("method").toUpperCase(),
@@ -42,7 +45,7 @@ var github = module.exports = (function() {
                     if (errors) return err(error);
                     
                     //console.log(resp);
-                    console.log(body);
+                    //console.log(body);
                     cb();
                 });
             });
