@@ -42,8 +42,9 @@ var github = module.exports = (function() {
             var form = $("div.login_form form:first");
             form.find("[name=login]").val("c9integrationtest");
             form.find("[name=password]").val("jan1234");
-            var data = "login=c9integrationtest&password=jan1234&return_to=" + form.find("[name=return_to]").val() + "&authenticity_token=" + form.find("[name=authenticity_token]").val();
-            //makeMeNiceFormatted(form.serializeArray());
+            
+            var data = makeMeNiceFormatted(form.serializeArray());
+            
             // post the data
             request({
                 uri: "https://github.com/session",
