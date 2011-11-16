@@ -8,7 +8,7 @@ var github = module.exports = (function() {
      */
     var run = function(err, callback) {
         login(err, function() {
-            callback();
+            console.log("OK: Github");
         });
     };
     
@@ -150,6 +150,7 @@ var github = module.exports = (function() {
     };
     
     return { 
-        run: run 
+        run: run,
+        name: "Github"
     };
 }());
