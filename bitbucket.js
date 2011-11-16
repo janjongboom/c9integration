@@ -1,12 +1,8 @@
 var request = require("request");
 var jsdom = require("jsdom");
 
-var github = module.exports = (function() {
-    
-    /**
-     * Main entry point for the test
-     */
-    var run = function(err, callback) {
+module.exports = (function() {
+    var run = function (err, callback) {
         login(err, callback);
     };
     
@@ -18,18 +14,18 @@ var github = module.exports = (function() {
             proxy = "http://127.0.0.1:8888";
 
         // this already redirects us to GitHub. No need to do this ourselves.
-        request({ uri: "http://c9.io/auth/github", proxy: proxy }, function (error, resp, body) {
+        request({ uri: "http://c9.io/auth/bitbucket", proxy: proxy }, function (error, resp, body) {
             if (error)
                 return err(error);
                 
-            fillInUsernamePassword(err, proxy, body, cb);
+            fillInUsernamePassword(err, proxy, resp.request.path, body, cb);
         });  
     };
     
     /**
-     * Fill in the username & password on Github
+     * Fill in the username & password on BitBucket
      */
-    var fillInUsernamePassword = function(err, proxy, body, cb) {
+    var fillInUsernamePassword = function(err, proxy, referer, body, cb) {
         // load the page in JsDom so we can use jQuery
         jsdom.env(body, ['http://code.jquery.com/jquery-1.5.min.js'], function(errors, window) {
             if (errors) return err(errors);
@@ -37,28 +33,29 @@ var github = module.exports = (function() {
             var $ = window.$;
 
             // fill out the form and serialize
-            var form = $("div.login_form form:first");
+            var form = $("div.newform form:first");
             if (!form || !form.length) return err("No form detected");
             
-            form.find("[name=login]").val("c9integrationtest");
+            form.find("[name=username]").val("c9integrationtest");
             form.find("[name=password]").val("jan1234");
             
             var data = makeMeNiceFormatted(form.serializeArray());
             
             // post the data
             request({
-                uri: "https://github.com" + form.attr("action"), 
+                uri: "https://bitbucket.org" + form.attr("action"), 
                 method: form.attr("method").toUpperCase(),
                 body: data,
                 proxy: proxy,
                 headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Referer": referer
                 }
             }, function(error, resp, body) {
                 if (error) return err(error);
 
                 if (resp.headers.location) {
-                    handleGithubAuthResponse(err, proxy, resp.headers.location, cb);
+                    handleAuthResponse(err, proxy, resp.headers.location, cb);
                 }
                 else {
                     err("POST yielded no redirect");
@@ -68,9 +65,9 @@ var github = module.exports = (function() {
     };
     
     /**
-     * Handle the response from Github
+     * Handle the response after logging in
      */
-    var handleGithubAuthResponse = function(err, proxy, location, cb) {
+    var handleAuthResponse = function(err, proxy, location, cb) {
         // the github auth response has a location
         request({
             uri: location,
@@ -92,19 +89,21 @@ var github = module.exports = (function() {
                 var $ = window.$;
 
                 // check the form and create an urlencoded request
-                var form = $("div.oauth_form form:first");
+                var form = $("form.newform");
+                
                 if (!form || !form.length) return err("No form detected");
                 
-                var data = makeMeNiceFormatted(form.serializeArray()) + "&authorize=1";
+                var data = makeMeNiceFormatted(form.serializeArray()) + "&authorize_access=on";
 
                 // post it
                 request({
-                    uri: "https://github.com" + form.attr("action"),
+                    uri: resp.request.path.replace(/\?(.*)$/, ""),
                     method: form.attr("method").toUpperCase(),
                     body: data,
                     proxy: proxy,
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Referer": resp.request.path
                     }
                 }, function(error, resp, body) {
                     if (error) return err(error);
@@ -123,7 +122,7 @@ var github = module.exports = (function() {
                 });
             });
         });
-    };
+    };    
     
     /**
      * Final step: Makes a request to the cloud9 dashboard
@@ -135,24 +134,24 @@ var github = module.exports = (function() {
         }, function(error, resp, body) {
             if (error) return err(error);
             
-            if (resp.request.url === "http://c9.io/c9integrationtest") {
+            if (resp.request.path === "http://c9.io/c9integrationtest") {
                 cb();
             } else {
                 err("Expected c9.io/c9integrationtest, but got " + resp.request.url);
             }
         });
     };
-        
+    
     var makeMeNiceFormatted = function (arr) {
         var trah = arr.map(function (a) { 
-            return a.name + "=" + a.value;//encodeURIComponent(a.value);
-        }).join("&") + "&commit=Log+in";
+            return a.name + "=" + encodeURIComponent(a.value);
+        }).join("&") + "&submit=Log+in";
         
         return trah;
-    };
+    };    
     
-    return { 
-        run: run,
-        name: "Github"
+    return {
+        name: "Bitbucket",
+        run: run
     };
 }());

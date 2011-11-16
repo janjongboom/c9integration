@@ -1,19 +1,32 @@
-var tests = [ require("./github") ];
+var tests = [ require("./github"), require("./bitbucket") ];
 for (var ix = 0; ix < tests.length; ix++) {
-    var name = tests[ix].name;
+    var testname = tests[ix].name.toString();
     
-    tests[ix].run(errorHandler, updateCallback);
+    tests[ix].run(function (ex) { 
+            errorHandler(ex, testname); 
+        },
+        function () { 
+            updateCallback(testname);
+        });
 }
 
 // simple tester
 var callbackCounter = 0;
-function updateCallback () {
-    if(++callbackCounter === tests.length) {
-        console.log('finished');
-    }
+function updateCallback (test) {
+    console.log("OK " + test);
+    
+    handleFinishedTest(test, true);
 }
 
-function errorHandler(ex) {
-    console.log("error", ex);
+function errorHandler(ex, test) {
+    console.log("FAILED " + test, ex);
     console.trace();
+    
+    handleFinishedTest(test, false);
+}
+
+function handleFinishedTest (test, succeeded) {
+    if(++callbackCounter === tests.length) {
+        console.log('finished');
+    }    
 }
