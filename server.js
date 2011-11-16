@@ -1,6 +1,4 @@
-var github = require("./github");
-
-var tests = [ github ];
+var tests = [ require("./github") ];
 for (var ix = 0; ix < tests.length; ix++) {
     tests[ix].run(errorHandler, updateCallback);
 }
@@ -14,5 +12,6 @@ function updateCallback () {
 }
 
 function errorHandler(ex) {
-    console.log("errur", ex);
+    console.log("error", ex);
+    console.trace();
 }
