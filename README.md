@@ -1,18 +1,9 @@
-# README for a newly created project.
+# Cloud 9 integration tests
 
-There are a couple of things you should do first, before you can use all of Git's power:
+Hi folks, this consists of a couple of things. First there are two integration tests here, one for Github and one for Bitbucket.
+These are end to end integration tests of all the flow C9 -> Authentication -> Callback.
 
-  * Add a remote to this project: in the Cloud9 IDE command line, you can execute the following commands
-    `git remote add [remote name] [remote url (eg. 'git@github.com:/ajaxorg/node_chat')]` [Enter]
-  * Create new files inside your project
-  * Add them to to Git by executing the following command
-    `git add [file1, file2, file3, ...]` [Enter]
-  * Create a commit which can be pushed to the remote you just added
-    `git commit -m 'added new files'` [Enter]
-  * Push the commit the remote
-    `git push [remote name] master` [Enter]
+Furthermore there is a query class to query the forever data on c9infra. This is in the cloud9infra branch under /status URL.
 
-That's it! If this doesn't work for you, please visit the excellent resources from [Github.com](http://help.github.com) and the [Pro Git](http://http://progit.org/book/) book.
-If you can't find your answers there, feel free to ask us via Twitter (@cloud9ide), [mailing list](groups.google.com/group/cloud9-ide) or IRC (#cloud9ide on freenode).
-
-Happy coding!
+There are basically two applications. Run `node server.js` to gather data, we can make this a cronjob that runs every 10 secs or so. 
+Maybe less. Then you can run `node static-fileserver.js` for the UI. The data is stored in `./public/datasource.json`.
