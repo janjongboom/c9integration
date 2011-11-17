@@ -1,32 +1,44 @@
-var tests = [ require("./github"), require("./bitbucket") ];
+var fs = require("fs");
+
+var tests = [ require("./forever"), require("./github"), require("./bitbucket") ];
+
 for (var ix = 0; ix < tests.length; ix++) {
-    var testname = tests[ix].name.toString();
-    
-    tests[ix].run(function (ex) { 
-            errorHandler(ex, testname); 
-        },
-        function () { 
-            updateCallback(testname);
-        });
+    (function () {
+        var testname = tests[ix].name.toString();
+        
+        tests[ix].run(function (ex, name) { 
+                errorHandler(ex, name || testname); 
+            },
+            function (name) { 
+                updateCallback(name || testname);
+            }, function () {
+                onFinished(testname);
+            });
+    } ());
 }
 
 // simple tester
-var callbackCounter = 0;
+var results = {};
 function updateCallback (test) {
+    results[test] = true;
     console.log("OK " + test);
-    
-    handleFinishedTest(test, true);
 }
 
 function errorHandler(ex, test) {
+    results[test] = false;
     console.log("FAILED " + test, ex);
     console.trace();
-    
-    handleFinishedTest(test, false);
 }
 
-function handleFinishedTest (test, succeeded) {
-    if(++callbackCounter === tests.length) {
-        console.log('finished');
-    }    
+var itemsFinished = 0;
+function onFinished(testname) {
+    if (++itemsFinished === tests.length) {
+        console.log("all finished. Number of results:", Object.keys(results).length);
+        
+        fs.writeFile("./public/datasource.json", JSON.stringify(Object.keys(results).map(function (r) {
+            return { name: r, success: results[r] };
+        })), function (err) {
+            console.log("file has been written");
+        });
+    }
 }

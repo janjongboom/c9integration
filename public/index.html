@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head profile="http://www.w3.org/2005/10/profile">
+        <title>Cloud9 status</title>
+    </head>
+    <body>
+        <h1>Status</h1>
+        <div id="data">
+            Loading...
+        </div>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.js"></script>
+        <script>
+            $(function () {
+                var ele = $("#data");
+                function loadData() {
+                    $("#data").html("Loading...");
+                    
+                    $.getJSON("datasource.json", function(d) {
+                        $("#data").empty();
+                        
+                        for (var ix = 0; ix < d.length; ix++) {
+                            var app = d[ix];
+                            
+                            $("#data").append($("<p>").text(app.name + " " + (app.success ? "online" : "offline")));
+                        }
+                    });
+                    
+                    setTimeout(loadData, 1000);
+                }
+                
+                loadData();
+            });
+        </script>
+    </body>
+</html>

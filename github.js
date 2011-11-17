@@ -6,7 +6,17 @@ var github = module.exports = (function() {
     /**
      * Main entry point for the test
      */
-    var run = function(err, callback) {
+    var run = function(err, callback, finished) {
+        var _err = err, _callback = callback;
+        err = function () {
+            _err.apply(null, arguments);
+            finished();
+        };
+        callback = function () {
+            _callback.apply(null, arguments);
+            finished();
+        };        
+        
         login(err, callback);
     };
     

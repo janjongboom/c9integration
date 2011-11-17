@@ -2,7 +2,17 @@ var request = require("request");
 var jsdom = require("jsdom");
 
 module.exports = (function() {
-    var run = function (err, callback) {
+    var run = function (err, callback, finished) {
+        var _err = err, _callback = callback;
+        err = function () {
+            _err.apply(null, arguments);
+            finished();
+        };
+        callback = function () {
+            _callback.apply(null, arguments);
+            finished();
+        };
+        
         login(err, callback);
     };
     
@@ -137,7 +147,7 @@ module.exports = (function() {
             if (resp.request.path === "http://c9.io/c9integrationtest") {
                 cb();
             } else {
-                err("Expected c9.io/c9integrationtest, but got " + resp.request.url);
+                err("Expected c9.io/c9integrationtest, but got " + resp.request.path);
             }
         });
     };
