@@ -1,6 +1,6 @@
 var fs = require("fs");
 
-var tests = [ require("./forever"), require("./github"), require("./bitbucket") ];
+var tests = [ require("./runvm") ];
 
 for (var ix = 0; ix < tests.length; ix++) {
     (function () {
